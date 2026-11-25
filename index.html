@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Nostalgia Time Machine</title>
 <meta name="description" content="A 5-minute survey about the games that shaped your childhood and the feeling they leave behind.">
 <meta name="theme-color" content="#d69a58">
@@ -37,6 +37,7 @@
     image-rendering: pixelated;
     image-rendering: crisp-edges;
   }
+  @supports (height: 100lvh) { #bg { height: 100lvh; } }
 
   main {
     position: relative;
@@ -107,6 +108,7 @@
     border: 2px solid var(--ink);
     background: #fff;
   }
+  @supports (height: 100dvh) { iframe { height: clamp(560px, 82dvh, 900px); } }
 
   .fallback { margin-top: 18px; font-size: 13px; text-align: center; }
   .fallback a {
@@ -129,9 +131,32 @@
   }
   .closed p { margin: 0 auto; max-width: 44ch; font-size: 14px; line-height: 1.65; color: var(--ink-soft); }
 
-  @media (max-width: 480px) {
-    .card { box-shadow: 5px 5px 0 var(--ink); padding: 6px; }
+  @media (max-width: 600px) {
+    main {
+      justify-content: flex-start;
+      padding: 18px max(10px, env(safe-area-inset-right)) calc(32px + env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+    }
+    header { margin-bottom: 16px; }
+    .badge { font-size: 11px; padding: 5px 10px; margin-bottom: 12px; }
+    h1 { text-shadow: 2px 2px 0 rgba(255, 246, 232, 0.75); }
+    header p { font-size: 13px; line-height: 1.55; }
+    .card { box-shadow: 4px 4px 0 var(--ink); border-width: 2px; padding: 4px; }
     .card-bar { display: none; }
+    iframe { height: 86vh; min-height: 520px; border-width: 1px; }
+    @supports (height: 100dvh) { iframe { height: 86dvh; } }
+    .closed { padding: 22px 14px 24px; }
+    .fallback { width: 100%; max-width: 680px; margin-top: 14px; }
+    .fallback a {
+      display: block;
+      margin-top: 8px;
+      padding: 13px 14px;
+      background: var(--ink);
+      color: var(--paper);
+      text-decoration: none;
+      border-radius: 4px;
+      box-shadow: 3px 3px 0 rgba(59, 35, 20, 0.35);
+    }
+    .fallback a:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 rgba(59, 35, 20, 0.35); }
   }
 </style>
 </head>
@@ -158,13 +183,13 @@
     <iframe
       id="formFrame"
       title="Nostalgia Time Machine survey"
-      data-src="https://docs.google.com/forms/d/e/1FAIpQLSco0kH6Z-0K5JW2_gE7HDrtk_lm3ZfZEw4VAx751gu55I0C4A/viewform?embedded=true"
+      data-src="https://docs.google.com/forms/d/e/1FAIpQLSc_t9Ee4Yi8_4UlPYeTr-939UK_VZC58KUjQ9QIbUDrqVaIfQ/viewform?embedded=true"
       frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
   </section>
 
   <p class="fallback" id="fallback">
     Form not loading?
-    <a href="https://docs.google.com/forms/d/e/1FAIpQLSco0kH6Z-0K5JW2_gE7HDrtk_lm3ZfZEw4VAx751gu55I0C4A/viewform" target="_blank" rel="noopener">Open it in a new tab</a>
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSc_t9Ee4Yi8_4UlPYeTr-939UK_VZC58KUjQ9QIbUDrqVaIfQ/viewform" target="_blank" rel="noopener">Open it in a new tab</a>
   </p>
   <footer>fesy.in.net</footer>
 </main>
@@ -230,7 +255,13 @@
     buf = new Uint32Array(img.data.buffer);
   }
   resize();
-  window.addEventListener('resize', function () { resize(); if (reduceMotion) draw(0); });
+  var lastW = window.innerWidth, lastH = window.innerHeight;
+  window.addEventListener('resize', function () {
+    if (window.innerWidth === lastW && Math.abs(window.innerHeight - lastH) < 160) return;
+    lastW = window.innerWidth; lastH = window.innerHeight;
+    resize();
+    if (reduceMotion) draw(0);
+  });
 
   // pointer tracking (in cell coordinates), eased so it feels fluid
   var mx = W * 0.5, my = H * 0.4, tx = mx, ty = my, lastMove = -1e9;
