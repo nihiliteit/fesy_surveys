@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nostalgia Time Machine</title>
+<meta name="description" content="A 5-minute survey about the games that shaped your childhood and the feeling they leave behind.">
+<meta name="theme-color" content="#d69a58">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>☕</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #3b2314;
+    --ink-soft: #6b4429;
+    --paper: #fff6e8;
+    --accent: #b8622b;
+    --cell: #e6b77c;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    background: var(--cell);
+    color: var(--ink);
+    font-family: "Space Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* live dithered background */
+  #bg {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+
+  main {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: clamp(20px, 5vw, 56px) 16px 48px;
+  }
+
+  header { text-align: center; max-width: 640px; margin-bottom: 24px; }
+  .badge {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    margin-bottom: 16px;
+  }
+  h1 {
+    margin: 0 0 12px;
+    font-size: clamp(28px, 6vw, 46px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    text-shadow: 3px 3px 0 rgba(255, 246, 232, 0.75);
+  }
+  header p {
+    margin: 0 auto;
+    max-width: 52ch;
+    font-size: clamp(13px, 2.4vw, 15px);
+    line-height: 1.6;
+    color: var(--ink);
+  }
+
+  .card {
+    width: 100%;
+    max-width: 680px;
+    background: var(--paper);
+    border: 3px solid var(--ink);
+    border-radius: 4px;
+    box-shadow: 8px 8px 0 var(--ink);
+    padding: 10px;
+  }
+  .card-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px 12px;
+    font-size: 12px;
+    color: var(--ink-soft);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .dot { width: 10px; height: 10px; border: 2px solid var(--ink); background: var(--accent); }
+  .dot:nth-child(2) { background: #e6b77c; }
+  .dot:nth-child(3) { background: var(--paper); }
+  .card-bar span { margin-left: auto; }
+
+  iframe {
+    display: block;
+    width: 100%;
+    height: clamp(560px, 82vh, 900px);
+    border: 2px solid var(--ink);
+    background: #fff;
+  }
+
+  .fallback { margin-top: 18px; font-size: 13px; text-align: center; }
+  .fallback a {
+    color: var(--ink);
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+  }
+  .fallback a:hover { color: var(--accent); }
+  footer { margin-top: 28px; font-size: 12px; letter-spacing: 0.08em; color: var(--ink); text-align: center; }
+
+  [hidden] { display: none !important; }
+  .closed { text-align: center; padding: 28px 22px 30px; }
+  .closed .big {
+    margin: 0 0 10px;
+    font-size: clamp(22px, 5vw, 30px);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .closed p { margin: 0 auto; max-width: 44ch; font-size: 14px; line-height: 1.65; color: var(--ink-soft); }
+
+  @media (max-width: 480px) {
+    .card { box-shadow: 5px 5px 0 var(--ink); padding: 6px; }
+    .card-bar { display: none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+
+<main>
+  <header>
+    <div class="badge">☕ Survey</div>
+    <h1>Nostalgia Time Machine</h1>
+    <p id="intro">Remember that warm, slightly aching feeling in your chest when you replay a game from your childhood? Tell me what you played and how it felt.</p>
+  </header>
+
+  <section class="card closed" id="closed" aria-label="Survey closed" hidden>
+    <h2 class="big">No active survey</h2>
+    <p>The Nostalgia Time Machine survey isn’t taking answers right now. Thank you to everyone who shared their memories. Check back later for the next one.</p>
+  </section>
+
+  <section class="card" id="open" aria-label="Survey form">
+    <div class="card-bar" aria-hidden="true">
+      <i class="dot"></i><i class="dot"></i><i class="dot"></i>
+      <span>5 minutes</span>
+    </div>
+    <iframe
+      id="formFrame"
+      title="Nostalgia Time Machine survey"
+      data-src="https://docs.google.com/forms/d/e/1FAIpQLSco0kH6Z-0K5JW2_gE7HDrtk_lm3ZfZEw4VAx751gu55I0C4A/viewform?embedded=true"
+      frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+  </section>
+
+  <p class="fallback" id="fallback">
+    Form not loading?
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSco0kH6Z-0K5JW2_gE7HDrtk_lm3ZfZEw4VAx751gu55I0C4A/viewform" target="_blank" rel="noopener">Open it in a new tab</a>
+  </p>
+  <footer>fesy.in.net</footer>
+</main>
+
+<script>
+// Survey closing date: the survey shows "No active survey" from this moment on.
+// 1 December 2026, 00:00 India time (IST, UTC+05:30). Change the date here if needed.
+(function () {
+  var CLOSE_AT = new Date('2026-12-01T00:00:00+05:30').getTime();
+  var closed = Date.now() >= CLOSE_AT || location.hash === '#closed'; // add #closed to the URL to preview
+  var frame = document.getElementById('formFrame');
+  if (closed) {
+    document.getElementById('open').hidden = true;
+    document.getElementById('fallback').hidden = true;
+    document.getElementById('closed').hidden = false;
+    document.getElementById('intro').textContent = 'This survey has ended.';
+    document.title = 'No active survey | Nostalgia Time Machine';
+  } else {
+    frame.src = frame.getAttribute('data-src');
+  }
+})();
+</script>
+<script>
+(function () {
+  var canvas = document.getElementById('bg');
+  var ctx = canvas.getContext('2d');
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // coffee palette, darkest to lightest (flat colours, dithered between them)
+  var HEX = ['#c4813f', '#d69a58', '#e6b77c', '#f2d3a6'];
+  function pack(hex) {
+    var n = parseInt(hex.slice(1), 16);
+    var r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+    return (255 << 24) | (b << 16) | (g << 8) | r; // little-endian RGBA
+  }
+  var PAL = HEX.map(pack);
+  var LEVELS = PAL.length - 1;
+
+  // 8x8 Bayer matrix, normalised to 0..1
+  function bayer(n) {
+    if (n === 1) return [[0]];
+    var m = bayer(n / 2), s = n / 2, out = [], y, x;
+    var q = [[0, 2], [3, 1]];
+    for (y = 0; y < n; y++) {
+      out.push([]);
+      for (x = 0; x < n; x++) {
+        out[y].push(4 * m[y % s][x % s] + q[Math.floor(y / s)][Math.floor(x / s)]);
+      }
+    }
+    return out;
+  }
+  var B = bayer(8), BAY = new Float32Array(64), i, j;
+  for (j = 0; j < 8; j++) for (i = 0; i < 8; i++) BAY[j * 8 + i] = (B[j][i] + 0.5) / 64;
+
+  var cell, W, H, img, buf;
+  function resize() {
+    cell = window.innerWidth < 600 ? 4 : 5;
+    W = Math.ceil(window.innerWidth / cell);
+    H = Math.ceil(window.innerHeight / cell);
+    canvas.width = W;
+    canvas.height = H;
+    img = ctx.createImageData(W, H);
+    buf = new Uint32Array(img.data.buffer);
+  }
+  resize();
+  window.addEventListener('resize', function () { resize(); if (reduceMotion) draw(0); });
+
+  // pointer tracking (in cell coordinates), eased so it feels fluid
+  var mx = W * 0.5, my = H * 0.4, tx = mx, ty = my, lastMove = -1e9;
+  function onMove(e) {
+    tx = e.clientX / cell;
+    ty = e.clientY / cell;
+    lastMove = performance.now();
+  }
+  window.addEventListener('pointermove', onMove, { passive: true });
+  window.addEventListener('pointerdown', onMove, { passive: true });
+
+  var colS = new Float32Array(2048), colS2 = new Float32Array(2048), colC2 = new Float32Array(2048);
+  var rowS = new Float32Array(2048), rowS2 = new Float32Array(2048), rowC2 = new Float32Array(2048);
+
+  function draw(t) {
+    var x, y, base, v, q, lo, idx, dx, dy, d2, d, k;
+    var R = Math.max(16, Math.min(W, H) * 0.14);   // glow radius in cells
+    var R2 = 2 * R * R, lim = 9 * R * R;
+
+    for (x = 0; x < W; x++) {
+      colS[x] = Math.sin(x * 0.045 + t * 0.35);
+      colS2[x] = Math.sin(x * 0.028 + t * 0.22);
+      colC2[x] = Math.cos(x * 0.028 + t * 0.22);
+    }
+    for (y = 0; y < H; y++) {
+      rowS[y] = Math.sin(y * 0.055 - t * 0.28);
+      rowS2[y] = Math.sin(y * 0.028);
+      rowC2[y] = Math.cos(y * 0.028);
+    }
+
+    for (y = 0; y < H; y++) {
+      dy = y - my;
+      for (x = 0; x < W; x++) {
+        // slow drifting waves (the diagonal term uses the sin-addition identity)
+        base = 0.5 + 0.12 * colS[x] + 0.12 * rowS[y] + 0.08 * (colS2[x] * rowC2[y] + colC2[x] * rowS2[y]);
+        dx = x - mx;
+        d2 = dx * dx + dy * dy;
+        if (d2 < lim) {
+          d = Math.sqrt(d2);
+          base += 0.55 * Math.exp(-d2 / R2) + 0.07 * Math.sin(d * 0.55 - t * 3.2) * Math.exp(-d / (R * 1.6));
+        }
+        v = base < 0 ? 0 : base > 1 ? 1 : base;
+        q = v * LEVELS;
+        lo = q | 0;
+        if (lo >= LEVELS) { idx = LEVELS; }
+        else { idx = lo + ((q - lo) > BAY[((y & 7) << 3) | (x & 7)] ? 1 : 0); }
+        buf[y * W + x] = PAL[idx];
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+
+  if (reduceMotion) { draw(0); return; }
+
+  var last = 0;
+  function frame(now) {
+    requestAnimationFrame(frame);
+    if (now - last < 33) return;   // ~30fps keeps it light on batteries
+    last = now;
+    var t = now / 1000;
+
+    // when the pointer is idle (or over the form), the glow drifts on its own
+    if (now - lastMove > 2500) {
+      tx = W * (0.5 + 0.32 * Math.sin(t * 0.23));
+      ty = H * (0.45 + 0.28 * Math.sin(t * 0.31 + 1.3));
+    }
+    mx += (tx - mx) * 0.08;
+    my += (ty - my) * 0.08;
+    draw(t);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
